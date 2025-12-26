@@ -1,4 +1,4 @@
-    # 4. Networking
+# 4. Networking
 Real applications are **not single containers**.
 
 > APIs talk to databases  
@@ -166,4 +166,98 @@ doceker image ls
 docker history myapp:0.1
 ```
 
-# 6. Efficient Dockerfile
+# 6. Efficient Dockerfiles (Caching, `.dockerignore`, Image Size)  
+Keep images small, rebuild fast.  
+
+> Docker builds images **layer by layer** and **chaches** each layer.
+> If a alyer doesn't change -> Docker **reuses it**.
+
+```Dockerfile
+FROM python
+WORKDIR /app
+COPY app.py .
+CMD python app.py
+```
+
+If `COPY app.py .` changes -> only that layer and below rebuild
+
+## Rule #1: Put the slow stuff first:
+- slow stuff = dependency installation (rarely changes)
+- fast stuff = your source code (often changes)
+
+Example of a ❌**BAD** build:
+```Dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+
+COPY . .
+RUN pip install flask
+
+CMD ["python", "app.py"]
+```
+
+Example of a ✅**GOOD** build:
+```Dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
+
+CMD ["python", "app.py"]
+```
+
+Task - refactor your app
+
+I. Add `requirements.txt`: `flask`  
+
+II. Update `app.py`
+```Python
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Fast rebuild Dockerfile 🚀"
+
+app.run(host="0.0.0.0", port=8000)
+```
+
+III. Optimize Dockerfile
+```Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
+
+CMD ["python","app.py"]
+```
+We added requirements part before app.py part:
+- `--no-cache-dir` downloads packages and stores them in cache (`/.cache/pip). Inside Docker this cache increases image size, is useless after build. So this part says "install packages, but don't keep the download cache."
+
+IV. Add `.dockerignore`, for example:
+```Dockerignore
+__pycache__/
+*.pyc
+.git
+.gitignore
+.env
+venv/
+node_modules/
+```
+
+It matters because Docker sends the entire folder to the daemon. Junk slows builds and makes your images bigger.
+
+
+V. Build & test caching  
+`docker build -t myapp:0.2 .`
+- `-t` tells Docker "Give the image a name and a version so I can refer to it later."
+- `.` (dot at the end) means "Use the current directory as the build context"
+
