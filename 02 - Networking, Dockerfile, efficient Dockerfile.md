@@ -209,6 +209,14 @@ COPY app.py .
 CMD ["python", "app.py"]
 ```
 
+# Rule #2: Smaller base images
+Common choices:
+- python:3.11 ❌ big
+- python:3.11-slim ✅ good default
+- python:3.11-alpine ⚠️ smallest but tricky
+
+# Rule #3: Add `.dockerignore` file to exclude junk from the image
+
 Task - refactor your app
 
 I. Add `requirements.txt`: `flask`  
@@ -260,4 +268,5 @@ V. Build & test caching
 `docker build -t myapp:0.2 .`
 - `-t` tells Docker "Give the image a name and a version so I can refer to it later."
 - `.` (dot at the end) means "Use the current directory as the build context"
+
 
