@@ -148,3 +148,22 @@ From inside `docker_app/` (cd C:\docker_test\docker_app\)
 -`-t` -> tag  (name + version):
     -- myapp (image name)
     -- 0.1 (version (tag))
+
+V. Run your image
+`docker run -d -p 8000:8000 --name myapp myapp:0.1`  
+Opne browser:
+`https://localhost:8000`  
+You're now running your own image! 
+
+
+Important concept - **Layers & caching**.  If you change: 
+- `app.py` -> only COPY layer rebuilds
+- `FROM` -> everything rebuilds
+
+Inspect what you build:
+```bash
+doceker image ls
+docker history myapp:0.1
+```
+
+# 6. Efficient Dockerfile
