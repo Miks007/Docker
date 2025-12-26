@@ -76,3 +76,54 @@ font-family: Tahoma, Verdana, Arial, sans-serif; }
 working. Further configuration is required.</p>
 ```
 I have to publish port to use this on my browser, right now it is not reachable
+
+
+V. Debugging
+`docker network inspect mynet`
+
+# 5. DockerFile
+Before we used **prebuild images** (nginx, curl).
+
+**DockerFile allows me to pack my application**. It is a text file that decribes **how to build an image**. (like a coocking recipie written step by step).
+
+> DockerFile -> Image -> Container
+
+## Minimal Dockerfile structure
+
+```Dockerfile
+FROM image
+WORKDIR /app
+COPY files
+RUN commands
+CMD ["start-command"]
+```
+each line creates a layer:
+- `FROM` - selects the base image (choose the kitchen Ubuntu, Alpine, Python, Node)
+- `WORKDIR` - sets the working directory inside the image
+- `COPY` - copies files from host -> iamge (putting igredients into the kitchen)
+- `RUN` - executes commands **at build time** (pre-coocking steps (installing tools))
+- `CMD` - defines the default command **at runtime** ("serve the meal")
+
+Tasks - build a tiny web app from scratch:
+
+I. Project structure (host)
+Create a folder:
+```
+docker_test/docker_app/
+│
+├─ app.py
+└─ Dockerfile
+```
+II. Application code (app.py)
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Hello from my own Docker image!")
+
+HTTPServer(("0.0.0.0", 8000), Handler).serve_forever()
+
+```
