@@ -1,4 +1,4 @@
-# 4. Networking
+    # 4. Networking
 Real applications are **not single containers**.
 
 > APIs talk to databases  
@@ -127,3 +127,24 @@ class Handler(BaseHTTPRequestHandler):
 HTTPServer(("0.0.0.0", 8000), Handler).serve_forever()
 
 ```
+**IMPORTANT**  
+0.0.0.0 allows external access from Docker.
+
+III. Dockerfile
+```Dockerfile
+FROM python:3.11-slim
+
+WORKDIR/app
+
+COPY app.py .
+
+CMD ["python", "app.py"]
+```
+
+IV. Build the image
+From inside `docker_app/` (cd C:\docker_test\docker_app\)
+`docker build -t myapp:0.1 .`
+
+-`-t` -> tag  (name + version):
+    -- myapp (image name)
+    -- 0.1 (version (tag))
