@@ -121,9 +121,113 @@ docker compose logs db
 ```
 
 ## Common mistakes
-❌ Using localhost between services
-❌ Forgetting volumes for databases
-❌ Expecting depends_on to wait for readiness
-❌ Mixing dev and prod config
+❌ Using localhost between services  
+❌ Forgetting volumes for databases  
+❌ Expecting depends_on to wait for readiness  
+❌ Mixing dev and prod config  
 
 # 10. Database Initialization & Migrations
+Starting a database container isn't enough, real apps need:
+- tables
+- indexes
+- seed data
+- schema evolution
+
+Databases need **explicit, repeatable initialization**. Never rely on manual SQL, clicking around.  
+Two approaches for that:
+1. init scripts (simple & reliable). **Best for:**
+- small projects
+- demos
+- early-stage apps
+
+Process:
+- Database image runs SQL scripts **once**
+- Only on **first startup**
+- Stored in volume
+  
+2. Migrations (scalable & professional), **Best for::**
+- long-lived apps
+- teams
+- production systems
+
+**Metaphor:**
+Versioned blueprints over time
+
+Task A - initalize PostgreSQL schema with init scripts
+
+I. Create init script (host)
+
+Create folder:
+```text
+db/
+└─ init.sql
+```
+
+`init.sql`:
+```sql
+CREATE TABLE notes (
+    id SERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+II. Update `docker-compose.yml`
+
+Add bind mount for init scipts:
+```yaml
+version: "3.9"
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: dev
+      PORT: 8000
+      DB_HOST: db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  pgdata:
+```
+
+Postgres image behavior:
+- on first startup only
+- checks if data directory is empty
+- executes all .sql files in: `/docker-entrypoint-initdb.d`
+- never runs them again if data exists
+
+III. Reset current resources:
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+important! `-v` removes volumes (⚠️ data loss).
+
+IV. Verify state of database
+```bash
+docker exec -it docker_app-db-1  psql -U app -d appdb
+```
+Inside psql:
+```sql
+\dt
+SELECT * FROM notes;
+```
+
+`\dt`        -- list tables
+`\l`         -- list databases
+`\dn`        -- list schemas
+`\q`         -- quit
