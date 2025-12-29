@@ -227,7 +227,7 @@ Inside psql:
 SELECT * FROM notes;
 ```
 
-`\dt`        -- list tables
-`\l`         -- list databases
-`\dn`        -- list schemas
-`\q`         -- quit
+`\dt`        -- list tables  
+`\l`         -- list databases  
+`\dn`        -- list schemas  
+`\q`         -- quit  
