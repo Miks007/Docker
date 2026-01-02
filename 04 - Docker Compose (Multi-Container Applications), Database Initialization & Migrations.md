@@ -135,7 +135,7 @@ Starting a database container isn't enough, real apps need:
 
 Databases need **explicit, repeatable initialization**. Never rely on manual SQL, clicking around.  
 Two approaches for that:
-1. init scripts (simple & reliable). **Best for:**
+1.**init scripts (simple & reliable). Best for:**
 - small projects
 - demos
 - early-stage apps
@@ -145,13 +145,13 @@ Process:
 - Only on **first startup**
 - Stored in volume
   
-2. Migrations (scalable & professional), **Best for::**
+2. **Migrations (scalable & professional), Best for:**
 - long-lived apps
 - teams
 - production systems
 
 **Metaphor:**
-Versioned blueprints over time
+Versioned blueprints over time. Instead of rebuilding the whole building every time, you apply **small, ordered upgrades**.
 
 Task A - initalize PostgreSQL schema with init scripts
 
